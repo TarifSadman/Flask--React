@@ -40,6 +40,12 @@ const App = () => {
     message: '',
     blood_group: '',
   });
+  const [editData, setEditData] = useState({
+    name: '',
+    email: '',
+    message: '',
+    blood_group: '',
+  });
   const [editingId, setEditingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -47,10 +53,18 @@ const App = () => {
   const [alertVisible, setAlertVisible] = useState(false);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    if (editingId !== null) {
+      setEditData({
+        ...editData,
+        [e.target.name]: e.target.value,
+      });
+    }
+    else {
+      setFormData({
+        ...formData,
+        [e.target.name]: e.target.value,
+      });
+    }
   };
 
   useEffect(() => {
@@ -101,14 +115,14 @@ const App = () => {
   const handleEdit = (id) => {
     setEditingId(id);
     const editedData = submittedData.find((data) => data.id === id);
-    setFormData(editedData);
+    setEditData(editedData);
   };
 
   const handleSave = (id) => {
     setLoading(true);
   
     axios
-      .put(`http://localhost:5000/api/edit_data/${id}`, formData)
+      .put(`http://localhost:5000/api/edit_data/${id}`, editData)
       .then(() => {
         setEditingId(null);
         setFormData({
@@ -136,7 +150,7 @@ const App = () => {
 
   const handleCancelEdit = () => {
     setEditingId(null);
-    setFormData({
+    setEditData({
       name: '',
       email: '',
       message: '',
@@ -260,7 +274,7 @@ const App = () => {
                           <Input
                             type="text"
                             name="name"
-                            value={formData.name}
+                            value={editData.name}
                             onChange={handleChange}
                           />
                         ) : (
@@ -270,7 +284,7 @@ const App = () => {
                         <Td>{editingId === data.id ? (
                           <Select
                             name="blood_group"
-                            value={formData.blood_group}
+                            value={editData.blood_group}
                             onChange={handleChange}
                             placeholder="Select blood group"
                           >
@@ -290,7 +304,7 @@ const App = () => {
                           <Input
                             type="email"
                             name="email"
-                            value={formData.email}
+                            value={editData.email}
                             onChange={handleChange}
                           />
                         ) : (
@@ -299,7 +313,7 @@ const App = () => {
                         <Td>{editingId === data.id ? (
                           <Input
                             name="message"
-                            value={formData.message}
+                            value={editData.message}
                             onChange={handleChange}
                           />
                         ) : (
