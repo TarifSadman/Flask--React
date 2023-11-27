@@ -8,7 +8,7 @@ CORS(app)
 
 # Update the database URI if needed
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 db = SQLAlchemy(app)
 class FormData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -17,7 +17,6 @@ class FormData(db.Model):
     email = db.Column(db.String(50))
     message = db.Column(db.Text)
     updated_at = db.Column(db.DateTime, nullable=True)
-
 
 # Route to add data
 @app.route('/api/add_data', methods=['POST'])
@@ -36,7 +35,20 @@ def add_data():
 def get_stored_data():
     stored_data = FormData.query.all()
 
-    data_list = [{'id': data.id, 'name': data.name, 'email': data.email, 'message': data.message, 'updated_at': data.updated_at, 'blood_group': data.blood_group} for data in stored_data]
+    data_list = []
+    for data in stored_data:
+        data_dict = {
+            'id': data.id,
+            'name': data.name,
+            'email': data.email,
+            'message': data.message,
+            'blood_group': data.blood_group
+        }
+
+        if data.updated_at is not None:
+            data_dict['updated_at'] = data.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+
+        data_list.append(data_dict)
 
     return jsonify({'data': data_list})
 
@@ -52,11 +64,10 @@ def edit_data(id):
         edited_data.email = data['email']
         edited_data.message = data['message']
         edited_data.blood_group = data['blood_group']
-        edited_data.updated_at = datetime.utcnow()  # Set updated_at to current timestamp
+        edited_data.updated_at = datetime.utcnow()
 
         db.session.commit()
 
-        # Manually set the updated_at field in the response data
         response_data = {
             'id': edited_data.id,
             'name': edited_data.name,
@@ -87,4 +98,4 @@ if __name__ == '__main__':
     with app.app_context():
         db.drop_all()
         db.create_all()
-    app.run(debug=True)
+        app.run(debug=True)
